@@ -53,24 +53,23 @@ which will basically do
 
 ``` ruby
 
-  def publish_created_event
-    routing_key = self.class.build_routing_key_for_record_action(self, "created")
-    // post.created
-    event_name = self.class.resource_action_routing_key("created")
-    // post.created
+def publish_created_event
+  routing_key = self.class.build_routing_key_for_record_action(self, "created")
+  // post.created
+  event_name = self.class.resource_action_routing_key("created")
+  // post.created
 
-    record_created_event = ::Atr::Event.new(routing_key, event_name, self)
+  record_created_event = ::Atr::Event.new(routing_key, event_name, self)
 
-    ::Atr.publish_event(record_created_event)
-  end
+  ::Atr.publish_event(record_created_event)
+end
 ```
 
 Etc Etc for updated/destroyed.
 
 **So to walkthrough publish_created_event above**
 
-We
-1. create routing key based on the name of the class, + the action. Additionally if you scope the event, this will be reflected in the routing key (i.e. you can scope it to a particular subscriber or user or whatever, so you can share state and or sync events between multiple users belonging to the same organization). (more on that later)
+1. First, we create routing key based on the name of the class, + the action. Additionally if you scope the event, this will be reflected in the routing key (i.e. you can scope it to a particular subscriber or user or whatever, so you can share state and or sync events between multiple users belonging to the same organization). (more on that later)
 2. we generate an event name based on name of the class + the action (scope doesent matter we just want to describe what happened)
 3. wrap the record in an ::Atr::Event object
 4. Publish the event, this will Marshal.dump the record through redis, and if there is a subscriber listening on the routing key of the event, the websocket connection (Atr::Reactor) instance, will receive that message, unmarshall it back into the original event object, and write it to the websocket.
