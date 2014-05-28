@@ -15,15 +15,14 @@ Reel, Celluloid&Celluloid::IO, and Redis
 
 Well dont use this yet because its incomplete. But the goal is mainly:
 
-1) Make it easy to publish changes to the connected client
-2) Event machine is a pile of *your preferred synonym for garbage*, so, didnt want to use any library that uses event machine. Use CelluloidIO and Reel as a foundation, because Reel is pretty cool.
-3) Be able to publish events from anywhere in your application eventually, but for now just focus on making it easy to publish when resources themselves are created/updated/destroyed.
-4) Single thread per websocket request that comes in. That lets you scope the websockets to the lowest level in your application that you choose to. I.E.
+1. Make it easy to publish changes to the connected client
+2. Event machine is a pile of *your preferred synonym for garbage*, so, didnt want to use any library that uses event machine. Use CelluloidIO and Reel as a foundation, because Reel is pretty cool.
+3. Be able to publish events from anywhere in your application eventually, but for now just focus on making it easy to publish when resources themselves are created/updated/destroyed.
+4. Single thread per websocket request that comes in. That lets you scope the websockets to the lowest level in your application that you choose to. I.E.
 
 Lets say you have a subscriber which has many users. You can scope the publishing of events to the subscriber, and each connected user has its own websocket thread open to prevent chaotic behavior Ive seen happen in many other websocket implementations.
 
 **So its strongly focused on listening for events, not triggering, maybe that will change in future maybe not IDK.**
-
 
 ### Usage
 
@@ -56,9 +55,9 @@ which will basically do
 
   def publish_created_event
     routing_key = self.class.build_routing_key_for_record_action(self, "created")
-    // ("post.created")
+    // post.created
     event_name = self.class.resource_action_routing_key("created")
-    // ("post.created")
+    // post.created
 
     record_created_event = ::Atr::Event.new(routing_key, event_name, self)
 
@@ -71,10 +70,10 @@ Etc Etc for updated/destroyed.
 **So to walkthrough publish_created_event above**
 
 We
-1) create routing key based on the name of the class, + the action. Additionally if you scope the event, this will be reflected in the routing key (i.e. you can scope it to a particular subscriber or user or whatever, so you can share state and or sync events between multiple users belonging to the same organization). (more on that later)
-2) we generate an event name based on name of the class + the action (scope doesent matter we just want to describe what happened)
-3) wrap the record in an ::Atr::Event object
-4) Publish the event, this will Marshal.dump the record through redis, and if there is a subscriber listening on the routing key of the event, the websocket connection (Atr::Reactor) instance, will receive that message, unmarshall it back into the original event object, and write it to the websocket.
+1. create routing key based on the name of the class, + the action. Additionally if you scope the event, this will be reflected in the routing key (i.e. you can scope it to a particular subscriber or user or whatever, so you can share state and or sync events between multiple users belonging to the same organization). (more on that later)
+2. we generate an event name based on name of the class + the action (scope doesent matter we just want to describe what happened)
+3. wrap the record in an ::Atr::Event object
+4. Publish the event, this will Marshal.dump the record through redis, and if there is a subscriber listening on the routing key of the event, the websocket connection (Atr::Reactor) instance, will receive that message, unmarshall it back into the original event object, and write it to the websocket.
 
 This allows us to publish events with pretty fine grained precision, and broadcast them to specific subscribers. If you're unfamiliar with redis pub/sub, rundown is, if you are listening to the channel at the moment the message is published, the subscriber will get it, otherwise it removes it and pays no regard to the msssage being published. No durability, but thats what we want for websocket events.
 
@@ -101,6 +100,7 @@ var ws = new WebSocket("ws://127.0.0.1:7777");
 ```
 
 ### Listen for events
+``` javascript
 ws.onmessage = function(e) {
   var event, parsed_event;
 
@@ -185,7 +185,7 @@ Here is a snippet of code from an inprogress sideproject, using a base angular c
 end
 ```
 
-Note: the following are bad examples. I.e. Im not really authenticating anything im just checking that the websocket request has a valid organization id in the path, really youd want to use auth token or some way to validate the request. But it's so low level that it should be easy to do whatever you need to w/this middlewarish pattern for scoping/validating.
+**NOTE:** the following are bad examples. I.e. Im not really authenticating anything im just checking that the websocket request has a valid organization id in the path, really youd want to use auth token or some way to validate the request. But it's so low level that it should be easy to do whatever you need to w/this middlewarish pattern for scoping/validating.
 
 **Websocket Authenticator**
 
@@ -256,6 +256,7 @@ end
 ```
 
 Kind of ghetto, but works for now, basically, this will using the organization_id attribute, and prepend the key (without the _id), i.e.
+
 organization.#{organization_id}.post.created
 
 Whenever creating routing keys when publishing events. (only for that specific resource though, so you probably want to add that same publication scope, and define a method that gets to that scope for each of your models requiring publication).
@@ -280,7 +281,7 @@ end
 
 ### If any of how it works is confusing, pay attention to the following as it may clear things up:
 
-Note, the redis pubsub mechanism is only concerned about the publication scope, i.e.
+**NOTE:** the redis pubsub mechanism is only concerned about the publication scope, i.e.
 
 organization.1234.post.created
 
