@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+require 'thor'
+require 'atr'
+require './config/environment.rb'
+
+class AtrServer < ::Thor
+  class_option :server_host, :default => "127.0.0.1"
+  class_option :server_port, :default => 7777
+
+  desc "start", "Start ATR"
+  def start
+    puts "Starting ATR SERVER"
+    ::Dir.glob(::Rails.root.join('app', 'models', "**", "*.rb")).each{ |file| load file }
+
+    ::Atr::Server.supervise_as :websocket_server
+
+    ::ActiveRecord::Base.clear_active_connections!
+  end
+end
+
+::AtrServer.start
+
+sleep
