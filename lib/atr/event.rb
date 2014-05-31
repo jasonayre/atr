@@ -12,12 +12,13 @@ module Atr
     attribute :routing_key
 
     def initialize(routing_key, name, record)
-      self[:id] = rand(1000)
       self[:routing_key] = routing_key
       self[:name] = name
-      self[:record] = record.attributes
+      self[:record] = record
+      self[:id] = ::SecureRandom.hex
       self[:record_type] = record.class.name
-      self[:occured_at] = ::DateTime.now
+      self[:occured_at] ||= ::DateTime.now
     end
+
   end
 end
