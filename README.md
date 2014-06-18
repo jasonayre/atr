@@ -137,7 +137,7 @@ Here is a snippet of code from an inprogress sideproject, using a base angular c
       $scope.websocket_base_url = "ws://127.0.0.1:7777";
 
       $scope.websocketUrl = function() {
-        return [ $scope.websocket_base_url, _.flatten(_.pairs(myscope.websocket_params)).join("/") ].join("/");
+        return [ $scope.websocket_base_url, _.flatten(_.pairs($scope.websocket_params)).join("/") ].join("/");
       };
 
       $scope.ws = new WebSocket($scope.websocketUrl());
