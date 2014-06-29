@@ -38,6 +38,10 @@ module Atr
 
     ::ActiveSupport.run_load_hooks(:atr, self)
   end
+
+  def self.configured?
+    respond_to?(:configuration)
+  end
 end
 
 require 'atr/railtie' if defined?(Rails)

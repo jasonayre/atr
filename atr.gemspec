@@ -21,6 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "active_attr"
   spec.add_dependency "reel", "> 0.4.0"
   spec.add_dependency "redis"
+  spec.add_dependency "connection_pool", ">= 2.0.0"
   spec.add_dependency "celluloid-io"
   spec.add_dependency "celluloid-redis"
   spec.add_dependency "json"

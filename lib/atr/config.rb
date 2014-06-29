@@ -3,6 +3,14 @@ require 'active_support/ordered_options'
 module Atr
   class Config < ::ActiveSupport::OrderedOptions
     def initialize(options = {})
+      options[:redis] = {
+        :host => '127.0.0.1',
+        :port => '6379',
+        :driver => :celluloid
+      }
+
+      options[:publisher_pool_size] ||= 25
+
       super
     end
 

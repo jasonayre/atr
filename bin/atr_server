@@ -11,6 +11,8 @@ class AtrServer < ::Thor
   desc "start", "Start ATR"
   def start
     puts "Starting ATR SERVER"
+    ::Atr::Redis.connect
+
     ::Dir.glob(::Rails.root.join('app', 'models', "**", "*.rb")).each{ |file| load file }
 
     ::Atr::Server.supervise_as :websocket_server
